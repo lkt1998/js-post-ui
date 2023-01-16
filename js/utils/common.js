@@ -3,3 +3,17 @@ export function truncateText(text, maxLength) {
 
   return `${text.slice(0, maxLength - 1)}…`;
 }
+
+export function setTextContent(parent, selector, text) {
+  if (!parent) return;
+
+  const element = parent.querySelector(selector);
+  if (element) element.textContent = text;
+}
+
+export function setFieldValue(form, selector, value) {
+  if (!form) return;
+
+  const field = form.querySelector(selector);
+  if (field) field.value = value;
+}
