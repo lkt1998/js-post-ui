@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import postApi from './api/postApi';
-import { initPagination, initSearch, renderPagination, renderPostList } from './utils';
+import { initPagination, initSearch, renderPagination, renderPostList, toast } from './utils';
 
 // to use fromNow function
 dayjs.extend(relativeTime);
@@ -9,7 +9,8 @@ dayjs.extend(relativeTime);
 async function handleFilterChange(filterName, filterValue) {
   try {
     const url = new URL(window.location);
-    url.searchParams.set(filterName, filterValue);
+    if (filterName) url.searchParams.set(filterName, filterValue);
+
     // Update query param
     if (filterName === 'title_like') url.searchParams.set('_page', 1);
     history.pushState({}, '', url);
@@ -34,6 +35,22 @@ function setDefaultQueryParams() {
   return url.searchParams;
 }
 
+function registerPostDelete() {
+  document.addEventListener('post-delete', async (event) => {
+    try {
+      const post = event.detail;
+      const message = `Are you sure you want to delete post ${post.title}?`;
+      if (window.confirm(message)) {
+        await postApi.remove(post.id);
+        await handleFilterChange();
+      }
+      toast.success('Remove post successfully');
+    } catch (error) {
+      console.log('fail to register postDelete', error);
+    }
+  });
+}
+
 (async () => {
   try {
     // set default query param if not existed
@@ -53,6 +70,8 @@ function setDefaultQueryParams() {
       defaultParams: queryParams,
       onChange: (value) => handleFilterChange('title_like', value),
     });
+
+    registerPostDelete();
 
     // render post list based URL param
     renderPagination('postsPagination', pagination);
